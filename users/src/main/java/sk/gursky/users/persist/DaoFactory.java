@@ -73,6 +73,6 @@ public enum DaoFactory {
 		userDao.save(u2);
 		userDao.save(u3);
 		userDao.save(u4);
-		userDao.authorizeAndGetToken("Peter", "elct");
+		userDao.authorizeAndGetToken("Peter", "sovy");
 	}
 }

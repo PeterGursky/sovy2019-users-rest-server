@@ -1,5 +1,6 @@
 package sk.gursky.users.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -49,7 +50,7 @@ public class UsersController {
     		if (user.hasPermission("view_users"))
     			return userDao.getAll();
     		else
-    			throw new UnauthorizedActionException("view_users permission needed");
+    			throw new ForbiddenActionException("view_users permission needed");
    		throw new UnauthorizedActionException("unknown token");
     }
 
@@ -61,7 +62,7 @@ public class UsersController {
     		if (user.hasPermission("see_bg-user"))
     			return userDao.getMyUserById(id);
     		else
-    			throw new UnauthorizedActionException("see_bg-user permission needed");
+    			throw new ForbiddenActionException("see_bg-user permission needed");
     	throw new UnauthorizedActionException("unknown token");
     }
 
@@ -73,7 +74,7 @@ public class UsersController {
     		if (user.hasPermission("view_users"))
     			return userDao.getById(id);
     		else
-    			throw new UnauthorizedActionException("view_users permission needed");
+    			throw new ForbiddenActionException("view_users permission needed");
     	throw new UnauthorizedActionException("unknown token");
     }
     
@@ -84,10 +85,28 @@ public class UsersController {
     	User u = userDao.authorizeByToken(token);
     	if (u != null)
     		if (u.hasPermission("manage_users"))
-    			return userDao.save(user);
-    		else
-    			throw new UnauthorizedActionException("manage_users permission needed");
+				try {
+					return userDao.save(user);
+				} catch (DaoException e) {
+					throw new ForbiddenActionException(e.getMessage());
+				}
+			else
+    			throw new ForbiddenActionException("manage_users permission needed");
     	throw new UnauthorizedActionException("unknown token");
+    }
+
+    @CrossOrigin
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public User register(@RequestBody User user) {
+		try {
+			user.setId(null);
+			user.setActive(true);
+			user.setGroups(new ArrayList<>());
+			user.setLastLogin(null);
+			return userDao.save(user);
+		} catch (DaoException e) {
+			throw new ForbiddenActionException(e.getMessage());
+		}    			
     }
     
     @CrossOrigin
@@ -102,7 +121,7 @@ public class UsersController {
     				throw new DaoException("User with id = " + id + " not found - cannot be removed");
     			}
     		} else {
-    			throw new UnauthorizedActionException("manage_users permission needed");
+    			throw new ForbiddenActionException("manage_users permission needed");
     		}
     	throw new UnauthorizedActionException("unknown token");
     }
@@ -128,7 +147,7 @@ public class UsersController {
     		if (u.hasPermission("manage_groups"))
     			return groupDao.save(group);
     		else
-    			throw new UnauthorizedActionException("manage_groups permission needed");
+    			throw new ForbiddenActionException("manage_groups permission needed");
     	throw new UnauthorizedActionException("unknown token");
     }
     
@@ -144,7 +163,7 @@ public class UsersController {
     				throw new DaoException("Group with id = " + id + " not found - cannot be removed");
     			}
     		} else {
-    			throw new UnauthorizedActionException("manage_groups permission needed");
+    			throw new ForbiddenActionException("manage_groups permission needed");
     		}
     	throw new UnauthorizedActionException("unknown token");
     }

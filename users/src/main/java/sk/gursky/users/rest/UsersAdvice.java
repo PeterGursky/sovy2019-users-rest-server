@@ -31,4 +31,11 @@ public class UsersAdvice {
     public ApiError handleUnauthorizedActionException(UnauthorizedActionException e) {
         return new ApiError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
     }
+
+    @ExceptionHandler(ForbiddenActionException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseBody
+    public ApiError handleForbiddenActionException(ForbiddenActionException e) {
+        return new ApiError(HttpStatus.FORBIDDEN.value(), e.getMessage());
+    }
 }

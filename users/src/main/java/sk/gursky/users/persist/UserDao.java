@@ -10,6 +10,6 @@ public interface UserDao {
 	List<SimpleUser> getSimpleUsers();
 	List<User> getAll();
 	List<User> getByGroupId(Long groupId);
-	User save(User user);
+	User save(User user) throws DaoException;
 	boolean remove(Long userId);
 }

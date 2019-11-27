@@ -53,6 +53,7 @@ public class MemoryUserDao implements UserDao {
 		return userList;
 	}
 	
+
 	@Override
 	public synchronized List<User> getByGroupId(Long groupId) {
 		List<User> result = new ArrayList<>();
@@ -84,30 +85,31 @@ public class MemoryUserDao implements UserDao {
 	}
 
 	@Override
-	public synchronized User save(User user) {
+	public synchronized User save(User user) throws DaoException {
 		if (user == null)
 			throw new NullPointerException("User cannot be null");
 		if (user.getName() == null) 
 			throw new DaoException("User name canot be null");
 		removeUnknownGroups(user);
+		testConflict(user);
 		if (user.getId() == null) {
-			for(MyUser myUser : users) {
-				if (myUser.getName().equals(user.getName())) {
-					throw new DaoException("User with name " + user.getName() + " already exists");
-				}
-			}
 			MyUser u = new MyUser(user);
 			u.setId(++lastId);
 			users.add(u);
 			return getUser(u);
 		} else {
 			for(MyUser myUser : users) {
-				if (myUser.getName().equals(user.getName()) && myUser.getId() != user.getId()) {
-					throw new DaoException("Another user with name " + user.getName() + " already exists");
-				}
-			}
-			for(MyUser myUser : users) {
 				if (myUser.getId() == user.getId()) {
+					if (isLastAdmin(user.getId())) {
+						boolean hasAdmin = false;
+						for (Group g: user.getGroups()) {
+							if (g.getId() == 1L)
+								hasAdmin = true;
+						}
+						if (!hasAdmin) {
+							throw new DaoException("You cannot loose the last active admin");
+						}
+					}
 					myUser.setUser(user);
 					return getUser(myUser);
 				}
@@ -115,21 +117,37 @@ public class MemoryUserDao implements UserDao {
 			throw new DaoException("User with id = " + user.getId() + " not found - cannot be replaced" );
 		}
 	}
+	
+	private synchronized void testConflict(User user) throws DaoException{
+		for (MyUser mu: users) {
+			if (mu.getEmail().equals(user.getEmail().trim()) && user.getId() != mu.getId())
+				throw new DaoException("user with the same email already exists");
+			if (mu.getName().equals(user.getName().trim()) && user.getId() != mu.getId())
+				throw new DaoException("user with the same name already exists");
+		}
+	}
+
+	private synchronized boolean isLastAdmin(Long userId) {
+		int admins = 0;
+		boolean isAdmin = false;
+		for (MyUser u : users) {
+			if (u.hasGroupWithId(1L) && u.isActive())
+				admins++;
+			if (userId == u.getId() && u.hasGroupWithId(1L) && u.isActive())
+				isAdmin = true;
+		}
+		return (isAdmin && admins == 1);
+	}
 
 	@Override
 	public synchronized boolean remove(Long userId) {
 		if (userId == null)
 			throw new NullPointerException("userId cannot be null");
-		int admins = 0;
-		for (MyUser u : users) {
-			if (u.hasGroupWithId(1L) && u.isActive())
-				admins++;
-		}
 		Iterator<MyUser> usIt = users.iterator();
 		while(usIt.hasNext()) {
 			MyUser us = usIt.next();
 			if (us.getId() == userId) {
-				if (admins == 1 && us.hasGroupWithId(1L) && us.isActive()) {
+				if (isLastAdmin(userId)) {
 					throw new DaoException("You cannot remove the last active admin");
 				}
 				usIt.remove();
