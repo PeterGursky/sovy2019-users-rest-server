@@ -47,6 +47,14 @@ public class UsersController {
     public void getToken(@PathVariable String token) {
         userDao.deleteToken(token);
     }
+	
+	@CrossOrigin
+    @RequestMapping(value = "/check-token/{token}")
+    public void checkToken(@PathVariable String token) {
+		if (null == userDao.authorizeByToken(token)) {
+			throw new UnauthorizedActionException("unknown token");
+		}
+    }
 
 	@CrossOrigin
     @RequestMapping("/users/{token}")
