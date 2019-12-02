@@ -12,4 +12,5 @@ public interface UserDao {
 	List<User> getByGroupId(Long groupId);
 	User save(User user) throws DaoException;
 	boolean remove(Long userId);
+	void deleteToken(String token);
 }

@@ -92,6 +92,10 @@ public class MyUser {
 		return true;
     }
     
+    public boolean deleteToken(String token) {
+    	return tokens.remove(token) != null;
+    }
+    
     public String getEmail() {
         return email;
     }

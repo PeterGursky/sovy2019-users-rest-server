@@ -183,7 +183,18 @@ public class MemoryUserDao implements UserDao {
 	}
 
 	@Override
-	public User getById(Long userId) {
+	public synchronized User getById(Long userId) {
 		return getUser(getMyUserById(userId));
+	}
+
+	@Override
+	public synchronized void deleteToken(String token) {
+		for (MyUser u: users) {
+			if (u.isActive()) {
+				if (u.deleteToken(token)) {
+					return;
+				} 
+			}
+		}
 	}
 }

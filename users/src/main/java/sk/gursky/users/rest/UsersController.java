@@ -43,6 +43,12 @@ public class UsersController {
     }
 
 	@CrossOrigin
+    @RequestMapping(value = "/logout/{token}")
+    public void getToken(@PathVariable String token) {
+        userDao.deleteToken(token);
+    }
+
+	@CrossOrigin
     @RequestMapping("/users/{token}")
     public List<User> getUsers(@PathVariable String token) {
     	User user = userDao.authorizeByToken(token);
