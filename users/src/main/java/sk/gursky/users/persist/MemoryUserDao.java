@@ -122,9 +122,9 @@ public class MemoryUserDao implements UserDao {
 	public synchronized List<String> conflict(User user){
 		List<String> confictFields = new ArrayList<String>();
 		for (MyUser mu: users) {
-			if (mu.getEmail().equals(user.getEmail().trim()) && user.getId() != mu.getId())
+			if (mu.getEmail().equals(user.getEmail().trim()))
 				confictFields.add("email");
-			if (mu.getName().equals(user.getName().trim()) && user.getId() != mu.getId())
+			if (mu.getName().equals(user.getName().trim()))
 				confictFields.add("name");;
 		}
 		return confictFields;
