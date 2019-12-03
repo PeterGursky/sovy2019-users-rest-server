@@ -21,19 +21,18 @@ import sk.gursky.users.persist.SimpleUser;
 import sk.gursky.users.persist.User;
 import sk.gursky.users.persist.UserDao;
 
+@CrossOrigin
 @RestController
 public class UsersController {
 
 	private UserDao userDao = DaoFactory.INSTANCE.getUserDao();
 	private GroupDao groupDao = DaoFactory.INSTANCE.getGroupDao();
 	
-	@CrossOrigin
 	@RequestMapping("/users")
     public List<SimpleUser> getSimpleUsers() {
         return userDao.getSimpleUsers();
     }
 
-	@CrossOrigin
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public String getToken(@RequestBody NameAndPassword nameAndPassword) {
         String token = userDao.authorizeAndGetToken(nameAndPassword.getName(), nameAndPassword.getPassword());
@@ -42,21 +41,28 @@ public class UsersController {
         return token;
     }
 
-	@CrossOrigin
     @RequestMapping(value = "/logout/{token}")
     public void getToken(@PathVariable String token) {
         userDao.deleteToken(token);
     }
 	
-	@CrossOrigin
     @RequestMapping(value = "/check-token/{token}")
     public void checkToken(@PathVariable String token) {
 		if (null == userDao.authorizeByToken(token)) {
 			throw new UnauthorizedActionException("unknown token");
 		}
     }
+    
+    /**
+     * Returns list of conflict fields. Possible values are 'name' and 'email'.
+     * @param user
+     * @return
+     */
+    @RequestMapping(value = "/test-conflict", method = RequestMethod.POST)
+    public List<String> testConflict(@RequestBody User user) {
+		return userDao.conflict(user);
+    }    
 
-	@CrossOrigin
     @RequestMapping("/users/{token}")
     public List<User> getUsers(@PathVariable String token) {
     	User user = userDao.authorizeByToken(token);
@@ -68,7 +74,6 @@ public class UsersController {
    		throw new UnauthorizedActionException("unknown token");
     }
 
-	@CrossOrigin
     @RequestMapping("/bg-user/{id}/{token}")
     public MyUser getMyUserById(@PathVariable Long id, @PathVariable String token) {
     	User user = userDao.authorizeByToken(token);
@@ -80,7 +85,6 @@ public class UsersController {
     	throw new UnauthorizedActionException("unknown token");
     }
 
-    @CrossOrigin
     @RequestMapping("/user/{id}/{token}")
     public User getUserById(@PathVariable Long id, @PathVariable String token) {
     	User user = userDao.authorizeByToken(token);
@@ -92,7 +96,6 @@ public class UsersController {
     	throw new UnauthorizedActionException("unknown token");
     }
     
-    @CrossOrigin
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/users/{token}", method = RequestMethod.POST)
     public User saveUser(@PathVariable String token, @RequestBody User user) {
@@ -109,7 +112,6 @@ public class UsersController {
     	throw new UnauthorizedActionException("unknown token");
     }
 
-    @CrossOrigin
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public User register(@RequestBody User user) {
 		try {
@@ -123,7 +125,6 @@ public class UsersController {
 		}    			
     }
     
-    @CrossOrigin
     @RequestMapping(value = "/user/{id}/{token}", method = RequestMethod.DELETE)
     public void removeUserById(@PathVariable Long id, @PathVariable String token) {
     	User u = userDao.authorizeByToken(token);
@@ -140,19 +141,16 @@ public class UsersController {
     	throw new UnauthorizedActionException("unknown token");
     }
 
-	@CrossOrigin
 	@RequestMapping("/groups")
     public List<Group> getAllGroups() {
         return groupDao.getAll();
     }
 
-    @CrossOrigin
     @RequestMapping("/group/{id}")
     public Group getGroupById(@PathVariable Long id) {
         return groupDao.getById(id);
     }
     
-    @CrossOrigin
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/groups/{token}", method = RequestMethod.POST)
     public Group saveGroup(@RequestBody Group group, @PathVariable String token) {
@@ -165,7 +163,6 @@ public class UsersController {
     	throw new UnauthorizedActionException("unknown token");
     }
     
-    @CrossOrigin
     @RequestMapping(value = "/group/{id}/{token}", method = RequestMethod.DELETE)
     public void removeGroupById(@PathVariable Long id, @PathVariable String token) {
     	User u = userDao.authorizeByToken(token);

@@ -13,4 +13,5 @@ public interface UserDao {
 	User save(User user) throws DaoException;
 	boolean remove(Long userId);
 	void deleteToken(String token);
+	List<String> conflict(User user);
 }

@@ -118,6 +118,18 @@ public class MemoryUserDao implements UserDao {
 		}
 	}
 	
+	@Override
+	public synchronized List<String> conflict(User user){
+		List<String> confictFields = new ArrayList<String>();
+		for (MyUser mu: users) {
+			if (mu.getEmail().equals(user.getEmail().trim()) && user.getId() != mu.getId())
+				confictFields.add("email");
+			if (mu.getName().equals(user.getName().trim()) && user.getId() != mu.getId())
+				confictFields.add("name");;
+		}
+		return confictFields;
+	}
+	
 	private synchronized void testConflict(User user) throws DaoException{
 		for (MyUser mu: users) {
 			if (mu.getEmail().equals(user.getEmail().trim()) && user.getId() != mu.getId())
