@@ -58,7 +58,7 @@ public class UsersController {
      * @param user
      * @return
      */
-    @RequestMapping(value = "/test-conflict", method = RequestMethod.POST)
+    @RequestMapping(value = "/user-conflicts", method = RequestMethod.POST)
     public List<String> testConflict(@RequestBody User user) {
 		return userDao.conflict(user);
     }    
