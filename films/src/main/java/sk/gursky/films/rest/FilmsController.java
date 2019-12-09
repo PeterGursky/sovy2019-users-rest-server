@@ -19,6 +19,7 @@ import sk.gursky.films.persist.DaoFactory;
 import sk.gursky.films.persist.films.Film;
 import sk.gursky.films.persist.films.FilmDao;
 import sk.gursky.films.persist.films.FilmSimplified;
+import sk.gursky.films.persist.films.Person;
 import sk.gursky.films.persist.users.DaoException;
 import sk.gursky.films.persist.users.User;
 import sk.gursky.films.persist.users.UserDao;
@@ -35,13 +36,14 @@ public class FilmsController {
 			@RequestParam(value = "orderBy", required = false) Optional<String> orderBy,
 			@RequestParam(value = "descending", required = false) Optional<Boolean> descending,
 			@RequestParam(value = "indexFrom", required = false) Optional<Integer> indexFrom,
-			@RequestParam(value = "indexTo", required = false) Optional<Integer> indexTo) {
+			@RequestParam(value = "indexTo", required = false) Optional<Integer> indexTo,
+			@RequestParam(value = "search", required = false) Optional<String> search) {
 		try {
 			if (token.isPresent()) {
 				User user = userDao.authorizeByToken(token.get());
 				if (user != null) {
 					if (user.hasPermission("show_films")) {
-						return new ResponseEntity<List<Film>>(filmDao.getAll(orderBy,descending,indexFrom,indexTo), HttpStatus.OK);
+						return new ResponseEntity<List<Film>>(filmDao.getAll(orderBy,descending,indexFrom,indexTo,search), HttpStatus.OK);
 					} else {
 						throw new ForbiddenActionException("show_films permission needed");				    				
 					}
@@ -54,7 +56,7 @@ public class FilmsController {
 			return new ResponseEntity<ApiError>(new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+
     @GetMapping("/films/{id}")
     public Film getUserById(@RequestHeader(value = "X-Auth-Token", required = false) Optional<String> token, @PathVariable Long id) {
     	if (! token.isPresent())
@@ -68,7 +70,28 @@ public class FilmsController {
     	throw new UnauthorizedActionException("unknown token");
     }
     
-    @ResponseStatus(HttpStatus.CREATED)
+	@GetMapping("/search-person/{search}")
+	public ResponseEntity<?> getPersons(
+			@RequestHeader(value = "X-Auth-Token", required = false) Optional<String> token, @PathVariable String search) {
+		if (! token.isPresent())
+        	throw new UnauthorizedActionException("no token specified");
+		try {
+			User user = userDao.authorizeByToken(token.get());
+			if (user != null) {
+				if (user.hasPermission("show_films")) {
+					return new ResponseEntity<List<Person>>(filmDao.searchPerson(search), HttpStatus.OK);
+				} else {
+					throw new ForbiddenActionException("show_films permission needed");				    				
+				}
+			} else {
+				throw new UnauthorizedActionException("unknown token");
+			}
+		} catch (Exception e) {
+			return new ResponseEntity<ApiError>(new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value = "/films")
     public Film saveFilm(@RequestHeader(value = "X-Auth-Token", required = false) Optional<String> token, @RequestBody Film film) {
     	if (! token.isPresent())

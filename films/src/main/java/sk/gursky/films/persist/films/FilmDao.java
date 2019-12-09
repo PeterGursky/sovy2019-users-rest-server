@@ -15,7 +15,10 @@ public interface FilmDao {
 	List<Film> getSubinterval(int fromIndex, int toIndex);
 
 	List<Film> getAll(Optional<String> orderBy, Optional<Boolean> descending, Optional<Integer> indexFrom,
-			Optional<Integer> indexTo);
+			Optional<Integer> indexTo, Optional<String> search);
 	
 	List<FilmSimplified> getSimplifiedFilms();
+	
+	List<Person> searchPerson(String search);
+	List<Film> searchFilm(String search);
 }
