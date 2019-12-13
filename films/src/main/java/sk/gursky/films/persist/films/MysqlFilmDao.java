@@ -115,14 +115,8 @@ public class MysqlFilmDao implements FilmDao {
 	}
 
 	@Override
-	public List<Film> getAll(Optional<String> orderBy, Optional<Boolean> descending, Optional<Integer> indexFrom,
+	public FilmsResponse getAll(Optional<String> orderBy, Optional<Boolean> descending, Optional<Integer> indexFrom,
 			Optional<Integer> indexTo, Optional<String> search) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<FilmSimplified> getSimplifiedFilms() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -134,9 +128,9 @@ public class MysqlFilmDao implements FilmDao {
 	}
 
 	@Override
-	public List<Film> searchFilm(String search) {
+	public FilmsSimplifiedResponse getSimplifiedFilms(Optional<String> orderBy, Optional<Boolean> descending,
+			Optional<Integer> indexFrom, Optional<Integer> indexTo, Optional<String> search) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }

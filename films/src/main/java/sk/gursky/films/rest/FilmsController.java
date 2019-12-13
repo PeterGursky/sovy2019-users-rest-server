@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import sk.gursky.films.persist.DaoFactory;
 import sk.gursky.films.persist.films.Film;
 import sk.gursky.films.persist.films.FilmDao;
-import sk.gursky.films.persist.films.FilmSimplified;
+import sk.gursky.films.persist.films.FilmsResponse;
+import sk.gursky.films.persist.films.FilmsSimplifiedResponse;
 import sk.gursky.films.persist.films.Person;
 import sk.gursky.films.persist.users.DaoException;
 import sk.gursky.films.persist.users.User;
@@ -43,7 +44,7 @@ public class FilmsController {
 				User user = userDao.authorizeByToken(token.get());
 				if (user != null) {
 					if (user.hasPermission("show_films")) {
-						return new ResponseEntity<List<Film>>(filmDao.getAll(orderBy,descending,indexFrom,indexTo,search), HttpStatus.OK);
+						return new ResponseEntity<FilmsResponse>(filmDao.getAll(orderBy,descending,indexFrom,indexTo,search), HttpStatus.OK);
 					} else {
 						throw new ForbiddenActionException("show_films permission needed");				    				
 					}
@@ -51,7 +52,7 @@ public class FilmsController {
 					throw new UnauthorizedActionException("unknown token");
 				}
 			}
-			return new ResponseEntity<List<FilmSimplified>>(filmDao.getSimplifiedFilms(), HttpStatus.OK);
+			return new ResponseEntity<FilmsSimplifiedResponse>(filmDao.getSimplifiedFilms(orderBy,descending,indexFrom,indexTo,search), HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<ApiError>(new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
 		}

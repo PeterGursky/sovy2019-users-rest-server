@@ -14,11 +14,11 @@ public interface FilmDao {
 
 	List<Film> getSubinterval(int fromIndex, int toIndex);
 
-	List<Film> getAll(Optional<String> orderBy, Optional<Boolean> descending, Optional<Integer> indexFrom,
+	FilmsResponse getAll(Optional<String> orderBy, Optional<Boolean> descending, Optional<Integer> indexFrom,
 			Optional<Integer> indexTo, Optional<String> search);
 	
-	List<FilmSimplified> getSimplifiedFilms();
+	FilmsSimplifiedResponse getSimplifiedFilms(Optional<String> orderBy, Optional<Boolean> descending, Optional<Integer> indexFrom,
+			Optional<Integer> indexTo, Optional<String> search);
 	
 	List<Person> searchPerson(String search);
-	List<Film> searchFilm(String search);
 }

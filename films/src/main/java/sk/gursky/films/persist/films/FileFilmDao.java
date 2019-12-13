@@ -55,32 +55,26 @@ public class FileFilmDao implements FilmDao {
 		}
 	}
 
+
 	@Override
-	public List<Film> getAll(Optional<String> orderBy, Optional<Boolean> descending,
+	public FilmsSimplifiedResponse getSimplifiedFilms(Optional<String> orderBy, Optional<Boolean> descending,
 			Optional<Integer> indexFrom, Optional<Integer> indexTo, Optional<String> search) {
-		List<Film> result = films;
+		List<Film> filmsCopy = films;
+		List<FilmSimplified> result = null;
 		if (search.isPresent()) {
-			result = searchFilm(search.get());
-		} 
+			result = searchFilmSiplified(search.get());
+		} else {
+			result = filmsCopy.stream().map(film -> new FilmSimplified(film)).collect(Collectors.toList());
+		}
 		if (orderBy.isPresent()) {
-			Comparator<Film> comparator = (f1, f2) -> Long.compare(f1.getId(), f2.getId());
+			Comparator<FilmSimplified> comparator = (f1, f2) -> Long.compare(f1.getId(), f2.getId());
 			if (orderBy.isPresent()) {
 				switch (orderBy.get()) {
-				case "nazov":
-					comparator = (f1, f2) -> f1.getNazov().compareTo(f2.getNazov());
-				case "slovenskyNazov":
-					comparator = (f1, f2) -> Collator.getInstance(new Locale("sk")).compare(f1.getSlovenskyNazov(),
-							f2.getSlovenskyNazov());
 				case "rok":
-					comparator = (f1, f2) -> Integer.compare(f1.getRok(), f2.getRok());
+					comparator = (f1, f2) -> Integer.compare(f1.getRok(), f2.getRok());					
+					break;
 				default:
-					if (orderBy.get().startsWith("poradieVRebricku.")) {
-						String rebricek = orderBy.get().substring("poradieVRebricku.".length());
-						result = result.stream().filter(film -> film.getPoradieVRebricku().containsKey(rebricek))
-								.collect(Collectors.toList());
-						comparator = (f1, f2) -> Integer.compare(f1.getPoradieVRebricku().get(rebricek),
-								f2.getPoradieVRebricku().get(rebricek));
-					}
+					comparator = (f1, f2) -> f1.getNazov().compareTo(f2.getNazov());
 					break;
 				}
 			}
@@ -93,15 +87,70 @@ public class FileFilmDao implements FilmDao {
 		if (indexFrom.isPresent()) {
 			iFrom = Math.max(0, indexFrom.get());
 			if (iFrom >= result.size())
-				return new ArrayList<Film>();
+				return new FilmsSimplifiedResponse(new ArrayList<FilmSimplified>(), result.size());
 		}
 		int iTo = result.size();
 		if (indexTo.isPresent()) {
 			iTo = Math.min(result.size(), indexTo.get());
 			if (iTo <= iFrom)
-				return new ArrayList<Film>();
+				return new FilmsSimplifiedResponse(new ArrayList<FilmSimplified>(), result.size());
 		}
-		return result.subList(iFrom, iTo);
+		return new FilmsSimplifiedResponse(result.subList(iFrom, iTo), result.size());
+	}
+	
+	@Override
+	public FilmsResponse getAll(Optional<String> orderBy, Optional<Boolean> descending,
+			Optional<Integer> indexFrom, Optional<Integer> indexTo, Optional<String> search) {
+		List<Film> result = films;
+		if (search.isPresent()) {
+			result = searchFilm(search.get());
+		} 
+		if (orderBy.isPresent()) {
+			Comparator<Film> comparator = (f1, f2) -> Long.compare(f1.getId(), f2.getId());
+			if (orderBy.isPresent()) {
+				switch (orderBy.get()) {
+				case "nazov":
+					comparator = (f1, f2) -> f1.getNazov().compareTo(f2.getNazov());
+					break;
+				case "slovenskyNazov":
+					comparator = (f1, f2) -> Collator.getInstance(new Locale("sk")).compare(f1.getSlovenskyNazov(),
+							f2.getSlovenskyNazov());
+					break;
+				case "rok":
+					comparator = (f1, f2) -> Integer.compare(f1.getRok(), f2.getRok());
+					break;
+				default:
+					if (orderBy.get().startsWith("poradieVRebricku.")) {
+						String rebricek = orderBy.get().substring("poradieVRebricku.".length());
+						result = result.stream().filter(film -> film.getPoradieVRebricku().containsKey(rebricek))
+								.collect(Collectors.toList());
+						comparator = (f1, f2) -> Integer.compare(f1.getPoradieVRebricku().get(rebricek),
+								f2.getPoradieVRebricku().get(rebricek));
+					}
+				}
+			}
+			if (descending.isPresent() && descending.get() == true) {
+				comparator = Collections.reverseOrder(comparator);
+			}
+			Collections.sort(result, comparator);
+		}
+		int iFrom = 0;
+		if (indexFrom.isPresent()) {
+			iFrom = Math.max(0, indexFrom.get());
+			if (iFrom >= result.size())
+				return new FilmsResponse(new ArrayList<Film>(), result.size());
+		}
+		int iTo = result.size();
+		if (indexTo.isPresent()) {
+			iTo = Math.min(result.size(), indexTo.get());
+			if (iTo <= iFrom)
+				return new FilmsResponse(new ArrayList<Film>(), result.size());
+		}
+		if (!indexFrom.isPresent() && !indexTo.isPresent()) {
+			iFrom = 0;
+			iTo = 10;
+		}
+		return new FilmsResponse(result.subList(iFrom, iTo), result.size());
 	}
 
 	@Override
@@ -164,12 +213,7 @@ public class FileFilmDao implements FilmDao {
 		return film;
 	}
 
-	@Override
-	public List<FilmSimplified> getSimplifiedFilms() {
-		List<Film> filmsCopy = films;
-		return filmsCopy.stream().map(film -> new FilmSimplified(film)).collect(Collectors.toList());
-	}
-
+	
 	@Override
 	public List<Person> searchPerson(String search) {
 		if (search.trim().isEmpty())
@@ -180,8 +224,20 @@ public class FileFilmDao implements FilmDao {
 		}).collect(Collectors.toList());
 	}
 
-	@Override
-	public List<Film> searchFilm(String search) {
+	
+	private List<FilmSimplified> searchFilmSiplified(String search) {
+		if (search.trim().isEmpty())
+			return new ArrayList<>();
+		List<Film> filmsCopy = films;
+		return filmsCopy.stream().map(film -> new FilmSimplified(film)).filter(f -> {
+			List<String> fields = new ArrayList<>();
+			fields.add(f.getNazov());
+			return searchTokensInFields(search, fields);		
+		}).collect(Collectors.toList());
+	}
+	
+	
+	private List<Film> searchFilm(String search) {
 		if (search.trim().isEmpty())
 			return new ArrayList<>();
 		List<Film> filmsCopy = films;
@@ -269,4 +325,5 @@ public class FileFilmDao implements FilmDao {
 		}
 		return false;
 	}
+
 }
