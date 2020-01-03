@@ -2,6 +2,7 @@ package sk.gursky.films.rest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -51,6 +52,21 @@ public class UsersController {
 		if (null == userDao.authorizeByToken(token)) {
 			throw new UnauthorizedActionException("unknown token");
 		}
+    }
+
+    /**
+     * Returns set of permissions of the logged user identified by token.
+     * 
+     * @param token
+     * @return permissions
+     */
+    @RequestMapping(value = "/permissions/{token}")
+    public Set<String> getPermissions(@PathVariable String token) {
+    	User user = userDao.authorizeByToken(token);
+    	if (null == user) {
+			throw new UnauthorizedActionException("unknown token");
+		}
+    	return user.getPermissions();
     }
     
     /**

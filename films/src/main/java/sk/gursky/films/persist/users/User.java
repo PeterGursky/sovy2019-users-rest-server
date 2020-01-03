@@ -2,7 +2,9 @@ package sk.gursky.films.persist.users;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class User {
     private Long id;
@@ -20,6 +22,16 @@ public class User {
     		}
     	}
     	return false;
+    }
+    
+    public Set<String> getPermissions() {
+    	Set<String> result = new HashSet<>();
+    	for (Group g : groups) {
+    		for (String perm : g.getPermissions()) {
+    			result.add(perm);
+    		}
+    	}
+    	return result;
     }
     
     public Long getId() {
