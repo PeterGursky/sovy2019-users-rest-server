@@ -56,9 +56,6 @@ public class UsersController {
 
     /**
      * Returns set of permissions of the logged user identified by token.
-     * 
-     * @param token
-     * @return permissions
      */
     @RequestMapping(value = "/permissions/{token}")
     public Set<String> getPermissions(@PathVariable String token) {
@@ -71,8 +68,6 @@ public class UsersController {
     
     /**
      * Returns list of conflict fields. Possible values are 'name' and 'email'.
-     * @param user
-     * @return
      */
     @RequestMapping(value = "/user-conflicts", method = RequestMethod.POST)
     public List<String> testConflict(@RequestBody User user) {

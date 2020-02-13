@@ -59,7 +59,7 @@ public enum DaoFactory {
 		User u1 = new User();
 		u1.setName("Peter");
 		u1.setEmail("peter.gursky@upjs.sk");
-		u1.setPassword("sovy");
+		u1.setPassword("upjs");
 		u1.setActive(true);
 		u1.addGroup(g1);
 		User u2 = new User();
@@ -85,7 +85,7 @@ public enum DaoFactory {
 		userDao.save(u2);
 		userDao.save(u3);
 		userDao.save(u4);
-		userDao.authorizeAndGetToken("Peter", "sovy");
+		userDao.authorizeAndGetToken("Peter", "upjs");
 	}
 
 	public FilmDao getFilmDao() {
